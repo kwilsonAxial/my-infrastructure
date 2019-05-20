@@ -1,0 +1,43 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Testing Fargate Stack
+
+Metadata:
+
+  Authors:
+    Description: Kevin Wilson
+
+Parameters:
+
+  ProjectName:
+    Description: Project Name (used for Tagging and S3 Bucket used to store nested cloudformation templates)
+    Type: String
+  Environment:
+    Description: |
+      Used for tagging.
+    Type: String
+    AllowedValues:
+    - 'Testing'
+  BusinessOwner:
+    Description: |
+      Used for tagging. The person who assumes responsibility for the stack resources.
+    Type: String
+
+  VPCCIDRValue:
+    Description: VPC CIDR Value (10.XXX.0.0/16) [0-255]
+    Type: Number
+
+Resources:
+
+  BaseVPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        VPCCIDRValue:
+          !Ref VPCCIDRValue
+        Environment:
+          !Ref Environment
+        BusinessOwner:
+          !Ref BusinessOwner
+      TemplateURL: !Sub 'https://s3.amazonaws.com/axialhealthcare-analytics-testing/${ProjectName}/cloudformation/vpc.yml'

@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Creates VPC with a public and private subnet
+
+  Builds:
+    * VPC
+    * Subnets
+
+  Exports:
+    * VPC Name
+    * Subnet Names
+
+  Parameters:
+    Environment:
+      Description: |
+        Used for tagging. The environment that prefixes resource names
+      Type: String
+      AllowedValues:
+      - 'Testing'
+    BusinessOwner:
+      Description: |
+        Used for tagging. The person who assumes responsibility for the stack resources.
+      Type: String
