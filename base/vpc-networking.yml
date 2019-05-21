@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Creates VPC with a public and private subnet
+
+Parameters:
+  VPCCIDRValue:
+    Description: 'VPC CIDR Value (10.XXX.0.0/16) [0-255]'
+    Type: Number
+  ProjectName:
+    Description: Used for tagging
+    Type: String
+  Environment:
+    Description:  Used for tagging.
+    Type: String
+    AllowedValues:
+    - 'testing'
+
+Resources:
+  
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Sub '10.${VPCCIDRValue}.0.0/16'
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: "Name"
+          Value: !Sub ${ProjectName}-${Environment}-VPC
+        
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${Environment}-InternetGateway
+
+  GatewayToInternet:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 0
+         - Fn::GetAZs: !Ref 'AWS::Region'
+      VpcId: !Ref 'VPC'
+      CidrBlock: !Sub '10.${VPCCIDRValue}.0.0/24'
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: "Name"
+          Value: !Sub ${ProjectName}-${Environment}-PublicSubnet
+
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 0
+         - Fn::GetAZs: !Ref 'AWS::Region'
+      VpcId: !Ref 'VPC'
+      CidrBlock: !Sub '10.${VPCCIDRValue}.10.0/24'
+      Tags:
+        - Key: "Name"
+          Value: !Sub ${ProjectName}-${Environment}-PrivateSubnet
+  
+  NatGatewayEIP:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayToInternet
+    Properties:
+      Domain: vpc
+
+  NATGateway:
+    Type: "AWS::EC2::NatGateway"
+    Properties:
+      AllocationId:
+        Fn::GetAtt: [ NatGatewayEIP, AllocationId ]
+      SubnetId: !Ref PublicSubnet
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${Environment}-NATGateway
+  
+  PublicRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${Environment}-PublicRouteTable
+
+  PrivateRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${Environment}-PrivateRouteTable
+
+  PublicRoute:
+    Type: "AWS::EC2::Route"
+    DependsOn: GatewayToInternet
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateRoute:
+    Type: "AWS::EC2::Route"
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGateway
+      RouteTableId: !Ref PrivateRouteTable
+
+  PublicSubnetRouteTableAssoc:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet
+
+  PrivateSubnetRouteTableAssoc:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet
+
+Outputs:
+
+  VPC:
+    Description: 'VPC'
+    Value: !Ref VPC
+
+  SubnetsPublic:
+    Description: 'Public Subnet'
+    Value: !Ref PublicSubnet
+
+  SubnetsPrivate:
+    Description: 'Private Subnet'
+    Value: !Ref PrivateSubnet
+
+  NATGateway:
+    Description: "NAT Gateway"
+    Value: !Ref NATGateway

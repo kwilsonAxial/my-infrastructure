@@ -1,0 +1,7 @@
+
+[
+    { "ParameterKey":"ProjectName", "ParameterValue":"my-app" },
+    { "ParameterKey":"Environment", "ParameterValue":"testing" },
+    { "ParameterKey":"BusinessOwner", "ParameterValue":"Kevin Wilson" },
+    { "ParameterKey":"VPCCIDRValue", "ParameterValue":"1" }
+]

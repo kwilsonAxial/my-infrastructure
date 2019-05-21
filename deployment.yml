@@ -14,14 +14,12 @@ Parameters:
     Description: Project Name (used for Tagging and S3 Bucket used to store nested cloudformation templates)
     Type: String
   Environment:
-    Description: |
-      Used for tagging.
+    Description: Used for tagging.
     Type: String
     AllowedValues:
-    - 'Testing'
+    - 'testing'
   BusinessOwner:
-    Description: |
-      Used for tagging. The person who assumes responsibility for the stack resources.
+    Description: Used for tagging. The person who assumes responsibility for the stack resources.
     Type: String
 
   VPCCIDRValue:
@@ -34,10 +32,10 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:
-        VPCCIDRValue:
-          !Ref VPCCIDRValue
-        Environment:
-          !Ref Environment
-        BusinessOwner:
-          !Ref BusinessOwner
+        VPCCIDRValue: !Ref VPCCIDRValue
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+      Tags:
+        - Key: "BusinessOwner"
+          Value: !Ref BusinessOwner
       TemplateURL: !Sub 'https://s3.amazonaws.com/axialhealthcare-analytics-testing/${ProjectName}/cloudformation/vpc.yml'

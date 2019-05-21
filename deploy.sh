@@ -12,4 +12,4 @@ then
 fi
 
 ## S3 cloudformation deployments
-aws s3 cp vpc.yml s3://$BUCKET_NAME/$PROJECT_NAME/cloudformation/vpc.yml --profile analytics
+aws s3 cp vpc-networking.yml s3://$BUCKET_NAME/$PROJECT_NAME/cloudformation/vpc-networking.yml --profile analytics
