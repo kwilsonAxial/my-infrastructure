@@ -38,4 +38,6 @@ Resources:
       Tags:
         - Key: "BusinessOwner"
           Value: !Ref BusinessOwner
+        - Key: "ProductEnvironment"
+          Value: !Sub ${ProjectName}-${Environment}
       TemplateURL: !Sub 'https://s3.amazonaws.com/axialhealthcare-analytics-testing/${ProjectName}/cloudformation/vpc.yml'
